@@ -1,0 +1,80 @@
+<script type="text/javascript">
+    RED.nodes.registerType('sectoralarm-ng-query', {
+        category: 'sector alarm',
+        color: '#3FADB5',
+        defaults: {
+            name: { value: '' },
+            account: { value: '', type: 'sectoralarm-ng-config', required: true },
+            queryType: { value: 'useMsg' },
+            pageSize: {
+                value: 10,
+                validate: function (v) { return !isNaN(v) && Number(v) >= 1; }
+            }
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: 'font-awesome/fa-search',
+        label: function () {
+            if (this.name) return this.name;
+            return this.queryType === 'useMsg' ? 'sector query' : 'sector ' + this.queryType;
+        },
+        paletteLabel: 'sector query',
+        oneditprepare: function () {
+            function togglePageSize() {
+                const t = $('#node-input-queryType').val();
+                $('#row-pageSize').toggle(t === 'logs' || t === 'useMsg');
+            }
+            $('#node-input-queryType').on('change', togglePageSize);
+            togglePageSize();
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="sectoralarm-ng-query">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name" />
+    </div>
+    <div class="form-row">
+        <label for="node-input-account"><i class="fa fa-user"></i> Account</label>
+        <input type="text" id="node-input-account" />
+    </div>
+    <div class="form-row">
+        <label for="node-input-queryType"><i class="fa fa-search"></i> Query</label>
+        <select id="node-input-queryType" style="width:70%">
+            <option value="useMsg">— set by msg.payload —</option>
+            <option value="status">Panel status</option>
+            <option value="panel">Panel details</option>
+            <option value="panels">Panel list</option>
+            <option value="temperatures">Temperatures</option>
+            <option value="logs">Event log</option>
+            <option value="locks">Lock status</option>
+        </select>
+    </div>
+    <div class="form-row" id="row-pageSize">
+        <label for="node-input-pageSize"><i class="fa fa-list-ol"></i> Log entries</label>
+        <input type="number" id="node-input-pageSize" min="1" style="width:100px" />
+    </div>
+</script>
+
+<script type="text/markdown" data-help-name="sectoralarm-ng-query">
+Reads data from a Sector Alarm panel on demand. Stateless: every incoming
+message performs one API request.
+
+### Input
+
+If *Query* is set in the node, any message triggers it. Otherwise:
+
+: payload (string) : `status` | `panel` | `panels` | `temperatures` | `logs` | `locks`
+: payload (object) : `{ type, pageSize?, pageNumber? }` (paging applies to `logs`)
+
+### Output
+
+: topic (string) : `sectoralarm/<type>`
+: payload : API response as-is (shapes vary by panel generation), except
+  `status` which is normalized to `{ status, isOnline, statusTime }` with the
+  raw response in `msg.raw`.
+
+Note: *Temperatures* uses the legacy endpoint; the newest V2 temperature
+sensors may not appear there.
+</script>

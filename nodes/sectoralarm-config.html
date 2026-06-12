@@ -1,0 +1,112 @@
+<script type="text/javascript">
+    RED.nodes.registerType('sectoralarm-ng-config', {
+        category: 'config',
+        defaults: {
+            name: { value: '' },
+            panelId: { value: '', required: true }
+        },
+        credentials: {
+            email: { type: 'text' },
+            password: { type: 'password' },
+            code: { type: 'password' }
+        },
+        label: function () {
+            return this.name || 'Sector Alarm (' + (this.panelId || 'no panel') + ')';
+        },
+        oneditprepare: function () {
+            const nodeId = this.id;
+
+            $('#sectoralarm-fetch-panels').on('click', function () {
+                const $btn = $(this);
+                const $result = $('#sectoralarm-panels-result');
+                $btn.prop('disabled', true);
+                $result.text('Fetching panels...');
+
+                $.ajax({
+                    url: 'sectoralarm-ng/panels',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        email: $('#node-config-input-email').val(),
+                        password: $('#node-config-input-password').val(),
+                        nodeId: nodeId
+                    }),
+                    success: function (panels) {
+                        $btn.prop('disabled', false);
+                        if (!panels.length) {
+                            $result.text('No panels found on this account.');
+                            return;
+                        }
+                        const $select = $('<select style="width:70%"></select>');
+                        panels.forEach(function (p) {
+                            $select.append($('<option></option>')
+                                .attr('value', p.panelId)
+                                .text(p.displayName + ' (' + p.panelId + ')'));
+                        });
+                        $select.val($('#node-config-input-panelId').val() || panels[0].panelId);
+                        $select.on('change', function () {
+                            $('#node-config-input-panelId').val($(this).val());
+                        });
+                        $result.empty().append($select);
+                        $('#node-config-input-panelId').val($select.val());
+                    },
+                    error: function (xhr) {
+                        $btn.prop('disabled', false);
+                        if (xhr.status === 401) {
+                            $result.text('Login failed: check email and password.');
+                        } else if (xhr.status === 400) {
+                            $result.text('Enter email and password first.');
+                        } else {
+                            $result.text('Error fetching panels (' + xhr.status + ').');
+                        }
+                    }
+                });
+            });
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="sectoralarm-ng-config">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Home" />
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-email"><i class="fa fa-user"></i> Email</label>
+        <input type="text" id="node-config-input-email" placeholder="you@example.com" />
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-password"><i class="fa fa-lock"></i> Password</label>
+        <input type="password" id="node-config-input-password" />
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-code"><i class="fa fa-key"></i> Panel code</label>
+        <input type="password" id="node-config-input-code" placeholder="optional — needed for disarm/lock" />
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-panelId"><i class="fa fa-home"></i> Panel ID</label>
+        <input type="text" id="node-config-input-panelId" placeholder="e.g. 01234567" />
+    </div>
+    <div class="form-row">
+        <label></label>
+        <button type="button" id="sectoralarm-fetch-panels" class="red-ui-button">Fetch panels</button>
+        <span id="sectoralarm-panels-result" style="margin-left:8px"></span>
+    </div>
+</script>
+
+<script type="text/markdown" data-help-name="sectoralarm-ng-config">
+Shared configuration for Sector Alarm nodes.
+
+Holds your **My Pages** credentials (the same email/password you use at
+omatsivut.sectoralarm.fi / minasidor.sectoralarm.se / minside.sectoralarm.no)
+and the panel to operate on.
+
+- **Email / Password**: your Sector Alarm account credentials. Stored encrypted
+  in Node-RED's credentials file.
+- **Panel code**: the numeric code used for disarming and lock control.
+  Optional if you only arm (and code-free arming is enabled) or only read data.
+- **Panel ID**: select with *Fetch panels* after entering credentials.
+
+All Sector Alarm nodes sharing this config node share a single API session;
+logins are performed only when the access token expires.
+</script>

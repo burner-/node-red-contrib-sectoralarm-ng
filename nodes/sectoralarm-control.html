@@ -1,0 +1,84 @@
+<script type="text/javascript">
+    RED.nodes.registerType('sectoralarm-ng-control', {
+        category: 'sector alarm',
+        color: '#3FADB5',
+        defaults: {
+            name: { value: '' },
+            account: { value: '', type: 'sectoralarm-ng-config', required: true },
+            action: { value: 'useMsg' },
+            lockSerial: { value: '' }
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: 'font-awesome/fa-shield',
+        align: 'right',
+        label: function () {
+            if (this.name) return this.name;
+            return this.action === 'useMsg' ? 'sector control' : 'sector ' + this.action;
+        },
+        paletteLabel: 'sector control',
+        oneditprepare: function () {
+            function toggleSerial() {
+                const a = $('#node-input-action').val();
+                $('#row-lockSerial').toggle(a === 'lock' || a === 'unlock' || a === 'useMsg');
+            }
+            $('#node-input-action').on('change', toggleSerial);
+            toggleSerial();
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="sectoralarm-ng-control">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name" />
+    </div>
+    <div class="form-row">
+        <label for="node-input-account"><i class="fa fa-user"></i> Account</label>
+        <input type="text" id="node-input-account" />
+    </div>
+    <div class="form-row">
+        <label for="node-input-action"><i class="fa fa-bolt"></i> Action</label>
+        <select id="node-input-action" style="width:70%">
+            <option value="useMsg">— set by msg.payload —</option>
+            <option value="arm">Arm</option>
+            <option value="partialArm">Partial arm</option>
+            <option value="disarm">Disarm</option>
+            <option value="lock">Lock</option>
+            <option value="unlock">Unlock</option>
+        </select>
+    </div>
+    <div class="form-row" id="row-lockSerial">
+        <label for="node-input-lockSerial"><i class="fa fa-key"></i> Lock serial</label>
+        <input type="text" id="node-input-lockSerial" placeholder="needed for lock/unlock" />
+    </div>
+</script>
+
+<script type="text/markdown" data-help-name="sectoralarm-ng-control">
+Controls a Sector Alarm panel and its connected door locks.
+
+**⚠ This node operates a real alarm system.** Wire it carefully — an inject
+node connected here can disarm your home.
+
+### Input
+
+If *Action* is set in the node, any incoming message triggers it. Otherwise
+the command comes from the message:
+
+: payload (string) : `arm` | `partialArm` | `disarm` | `lock` | `unlock`
+: payload (object) : `{ command, lockSerial?, code? }`
+
+The panel code is taken from `msg.payload.code` if present, otherwise from the
+config node's *Panel code* credential. `disarm`, `lock` and `unlock` require a
+code; `arm`/`partialArm` need one only if code-free arming is disabled.
+
+### Output
+
+Sent only on success:
+
+: payload (object) : `{ command, ok: true, panelId, lockSerial? }`
+: raw (object) : API response
+
+On failure no message is sent; the error is raised for **Catch** nodes with
+`msg.error = { code, statusCode, message }`.
+</script>

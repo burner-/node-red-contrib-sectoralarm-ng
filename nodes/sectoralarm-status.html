@@ -1,0 +1,68 @@
+<script type="text/javascript">
+    RED.nodes.registerType('sectoralarm-ng-status', {
+        category: 'sector alarm',
+        color: '#3FADB5',
+        defaults: {
+            name: { value: '' },
+            account: { value: '', type: 'sectoralarm-ng-config', required: true },
+            interval: {
+                value: 60,
+                required: true,
+                validate: function (v) { return !isNaN(v) && Number(v) >= 10; }
+            },
+            emitOnStart: { value: false },
+            topic: { value: 'sectoralarm/status' }
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: 'font-awesome/fa-shield',
+        label: function () { return this.name || 'sector status'; },
+        paletteLabel: 'sector status'
+    });
+</script>
+
+<script type="text/html" data-template-name="sectoralarm-ng-status">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name" />
+    </div>
+    <div class="form-row">
+        <label for="node-input-account"><i class="fa fa-user"></i> Account</label>
+        <input type="text" id="node-input-account" />
+    </div>
+    <div class="form-row">
+        <label for="node-input-interval"><i class="fa fa-clock-o"></i> Poll every</label>
+        <input type="number" id="node-input-interval" min="10" style="width:100px" /> seconds
+    </div>
+    <div class="form-row">
+        <label for="node-input-emitOnStart" style="width:auto">
+            <input type="checkbox" id="node-input-emitOnStart" style="display:inline-block;width:auto;vertical-align:top" />
+            Emit current status on deploy
+        </label>
+    </div>
+    <div class="form-row">
+        <label for="node-input-topic"><i class="fa fa-comment"></i> Topic</label>
+        <input type="text" id="node-input-topic" placeholder="sectoralarm/status" />
+    </div>
+</script>
+
+<script type="text/markdown" data-help-name="sectoralarm-ng-status">
+Watches the armed status of a Sector Alarm panel.
+
+Polls the API on the configured interval and **sends a message only when the
+status changes** (or once at deploy if *Emit current status on deploy* is
+checked). Sending any message into the node performs an immediate query and
+always emits the current status.
+
+### Output
+
+: payload (object) : `status` (`armed` | `partialArmed` | `disarmed` | `unknown`),
+  `previousStatus`, `changed`, `isOnline`, `statusTime`, `panelId`
+: raw (object) : untouched API response
+
+### Errors
+
+Failures are reported via the node's status indicator and can be handled with
+a **Catch** node. Polling continues after transient errors. Repeated login
+failures are rate-limited internally (5 min cool-down) to avoid account lockout.
+</script>

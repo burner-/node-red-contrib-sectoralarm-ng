@@ -1,0 +1,158 @@
+[
+    {
+        "id": "sa-example-tab",
+        "type": "tab",
+        "label": "Sector Alarm example",
+        "disabled": false
+    },
+    {
+        "id": "sa-config-1",
+        "type": "sectoralarm-ng-config",
+        "name": "My Sector Alarm",
+        "panelId": ""
+    },
+    {
+        "id": "sa-status-1",
+        "type": "sectoralarm-ng-status",
+        "z": "sa-example-tab",
+        "name": "",
+        "account": "sa-config-1",
+        "interval": 60,
+        "emitOnStart": true,
+        "topic": "sectoralarm/status",
+        "x": 160,
+        "y": 80,
+        "wires": [["sa-debug-status"]]
+    },
+    {
+        "id": "sa-debug-status",
+        "type": "debug",
+        "z": "sa-example-tab",
+        "name": "status changes",
+        "active": true,
+        "tosidebar": true,
+        "complete": "payload",
+        "x": 420,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "sa-inject-temps",
+        "type": "inject",
+        "z": "sa-example-tab",
+        "name": "temperatures",
+        "props": [{ "p": "payload" }],
+        "payload": "temperatures",
+        "payloadType": "str",
+        "x": 150,
+        "y": 180,
+        "wires": [["sa-query-1"]]
+    },
+    {
+        "id": "sa-inject-logs",
+        "type": "inject",
+        "z": "sa-example-tab",
+        "name": "history",
+        "props": [{ "p": "payload" }],
+        "payload": "logs",
+        "payloadType": "str",
+        "x": 140,
+        "y": 220,
+        "wires": [["sa-query-1"]]
+    },
+    {
+        "id": "sa-query-1",
+        "type": "sectoralarm-ng-query",
+        "z": "sa-example-tab",
+        "name": "",
+        "account": "sa-config-1",
+        "queryType": "useMsg",
+        "pageSize": 10,
+        "x": 350,
+        "y": 200,
+        "wires": [["sa-debug-query"]]
+    },
+    {
+        "id": "sa-debug-query",
+        "type": "debug",
+        "z": "sa-example-tab",
+        "name": "query result",
+        "active": true,
+        "tosidebar": true,
+        "complete": "payload",
+        "x": 560,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "sa-inject-partialarm",
+        "type": "inject",
+        "z": "sa-example-tab",
+        "name": "partial arm",
+        "props": [{ "p": "payload" }],
+        "payload": "partialArm",
+        "payloadType": "str",
+        "x": 150,
+        "y": 320,
+        "wires": [["sa-control-1"]]
+    },
+    {
+        "id": "sa-inject-disarm",
+        "type": "inject",
+        "z": "sa-example-tab",
+        "name": "disarm",
+        "props": [{ "p": "payload" }],
+        "payload": "disarm",
+        "payloadType": "str",
+        "x": 140,
+        "y": 360,
+        "wires": [["sa-control-1"]]
+    },
+    {
+        "id": "sa-control-1",
+        "type": "sectoralarm-ng-control",
+        "z": "sa-example-tab",
+        "name": "",
+        "account": "sa-config-1",
+        "action": "useMsg",
+        "lockSerial": "",
+        "x": 360,
+        "y": 340,
+        "wires": [["sa-debug-control"]]
+    },
+    {
+        "id": "sa-debug-control",
+        "type": "debug",
+        "z": "sa-example-tab",
+        "name": "control result",
+        "active": true,
+        "tosidebar": true,
+        "complete": "payload",
+        "x": 570,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "sa-catch-1",
+        "type": "catch",
+        "z": "sa-example-tab",
+        "name": "sector errors",
+        "scope": null,
+        "uncaught": false,
+        "x": 150,
+        "y": 440,
+        "wires": [["sa-debug-errors"]]
+    },
+    {
+        "id": "sa-debug-errors",
+        "type": "debug",
+        "z": "sa-example-tab",
+        "name": "errors",
+        "active": true,
+        "tosidebar": true,
+        "complete": "true",
+        "x": 350,
+        "y": 440,
+        "wires": []
+    }
+]

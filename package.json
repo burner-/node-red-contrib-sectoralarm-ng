@@ -1,0 +1,51 @@
+{
+  "name": "node-red-contrib-sectoralarm-ng",
+  "version": "1.0.0",
+  "description": "Node-RED nodes for Sector Alarm — works with the current Sector Alarm API (My Pages / omatsivut). Complete rewrite, no dependency on the legacy sectoralarm library.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/burner-/node-red-contrib-sectoralarm-ng.git"
+  },
+  "bugs": {
+    "url": "https://github.com/burner-/node-red-contrib-sectoralarm-ng/issues"
+  },
+  "homepage": "https://github.com/burner-/node-red-contrib-sectoralarm-ng#readme",
+  "keywords": [
+    "node-red",
+    "sectoralarm",
+    "sector alarm",
+    "alarm",
+    "home-automation"
+  ],
+  "node-red": {
+    "version": ">=3.0.0",
+    "nodes": {
+      "sectoralarm-config": "nodes/sectoralarm-config.js",
+      "sectoralarm-status": "nodes/sectoralarm-status.js",
+      "sectoralarm-control": "nodes/sectoralarm-control.js",
+      "sectoralarm-query": "nodes/sectoralarm-query.js"
+    }
+  },
+  "files": [
+    "lib",
+    "nodes",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "mocha \"test/**/*_test.js\" --timeout 10000 --exit",
+    "smoke": "node scripts/smoke.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "^10.7.3",
+    "node-red": "^3.1.0",
+    "node-red-node-test-helper": "^0.3.4",
+    "undici": "^6.19.0"
+  }
+}
