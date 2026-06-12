@@ -6,3 +6,6 @@ coverage/
 
 # Local research artifacts (incl. downloaded Sector Alarm SPA bundle — do not republish)
 research/
+
+# npm auth token — never commit
+.npmrc
